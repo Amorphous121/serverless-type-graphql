@@ -1,0 +1,43 @@
+tables:
+  # We have a single DynamoDB Table named "Library".
+  Library:
+
+    # Let's add two models to our Library table: Author and Book.
+    models:
+      Author:
+        id: string
+        firstName: string
+        lastName: string
+        createdAt: number
+
+      Book:
+        id: string
+        title: string
+        createdAt: number
+        author: string
+
+    # Now, imagine we want to be able to retrieve an Author + all their Books
+    # in a single DynamoDB Query operation.
+
+    # To do that, we need a specific Author and all their Books to live under the same partition key.
+    # How about we use "Author-$id" as the partition key? Great, let's go with that.
+
+    # Beyonce calls a group of models that share the same partition key a "patition".
+    # Let's define one now, and name it "Authors"
+    partitions:
+      Authors:
+
+        # All Beyonce partition keys are prefixed (to help you avoid collisions)
+        # We said above we want our final partition key to be "Author-$id",
+        # so we set: "Author" as our prefix here
+        partitionKeyPrefix: Author
+
+        # And, now we can put a given Author and all their Books into the same partition
+        models:
+          Author:
+            partitionKey: [$id] # "Author-$id"
+            sortKey: [Author, $id]
+
+          Book:
+            partitionKey: [$author] # "Author-$authorId"
+            sortKey: [Book, $id]
